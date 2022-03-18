@@ -170,7 +170,7 @@ spec:
           claimName: db-pvc
       containers:
       - name: yelb-db
-        image: chiarasalvatore/yelb-db-cs:latest
+        image: chiarasalvatore/yelb-db-cs:0.2
         ports:
         - containerPort: 5432
         env:
@@ -204,6 +204,6 @@ spec:
     spec:
       containers:
       - name: yelb-appserver
-        image: chiarasalvatore/yelb-appserver-cs:latest
+        image: chiarasalvatore/yelb-appserver-cs:0.2
         ports:
         - containerPort: 4567

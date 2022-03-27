@@ -1,0 +1,275 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dockerhub-service
+secrets:
+  - name: dockercreds
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-docker-image-ui-from-git-source
+spec:
+  params:
+    - name: pathToDockerFile
+      type: string
+      description: The path to the dockerfile to build
+      default: $(resources.inputs.docker-source.path)/Dockerfile
+    - name: pathToContext
+      type: string
+      description: |
+        The build context used by Kaniko
+        (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
+      default: $(resources.inputs.docker-source.path)
+  resources:
+    inputs:
+      - name: docker-source
+        type: git
+    outputs:
+      - name: builtImage
+        type: image
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:v0.16.0
+      # specifying DOCKER_CONFIG is required to allow kaniko to detect docker credential
+      env:
+        - name: "DOCKER_CONFIG"
+          value: "/tekton/home/.docker/"
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=$(params.pathToDockerFile)
+        - --destination=$(resources.outputs.builtImage.url)
+        - --context=$(params.pathToContext)
+
+---
+
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: yelb-ui-cs-git
+spec:
+  type: git
+  params:
+    - name: revision
+      value: main
+    - name: url
+      value: https://github.com/kiaz-github/yelb-ui-cs.git
+
+---
+
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: yelb-ui-cs-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: index.docker.io/chiarasalvatore/yelb-ui-cs:0.2
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: build-yelb-ui-cs-docker-image-from-git-source-task-run
+spec:
+  serviceAccountName: dockerhub-service
+  taskRef:
+    name: build-docker-image-ui-from-git-source
+  params:
+    - name: pathToDockerFile
+      value: Dockerfile
+  resources:
+    inputs:
+      - name: docker-source
+        resourceRef:
+          name: yelb-ui-cs-git
+    outputs:
+      - name: builtImage
+        resourceRef:
+          name: yelb-ui-cs-image
+
+---
+
+#------------------------------------------------------
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-docker-image-appserver-from-git-source
+spec:
+  params:
+    - name: pathToDockerFile
+      type: string
+      description: The path to the dockerfile to build
+      default: $(resources.inputs.docker-source.path)/Dockerfile
+    - name: pathToContext
+      type: string
+      description: |
+        The build context used by Kaniko
+        (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
+      default: $(resources.inputs.docker-source.path)
+  resources:
+    inputs:
+      - name: docker-source
+        type: git
+    outputs:
+      - name: builtImage
+        type: image
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:v0.16.0
+      # specifying DOCKER_CONFIG is required to allow kaniko to detect docker credential
+      env:
+        - name: "DOCKER_CONFIG"
+          value: "/tekton/home/.docker/"
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=$(params.pathToDockerFile)
+        - --destination=$(resources.outputs.builtImage.url)
+        - --context=$(params.pathToContext)
+
+---
+
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: yelb-appserver-cs-git
+spec:
+  type: git
+  params:
+    - name: revision
+      value: main
+    - name: url
+      value: https://github.com/kiaz-github/yelb-appserver-cs.git
+
+---
+
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: yelb-appserver-cs-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: index.docker.io/chiarasalvatore/yelb-appserver-cs:0.2
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: build-yelb-appserver-cs-docker-image-from-git-source-task-run
+spec:
+  serviceAccountName: dockerhub-service
+  taskRef:
+    name: build-docker-image-appserver-from-git-source
+  params:
+    - name: pathToDockerFile
+      value: Dockerfile
+  resources:
+    inputs:
+      - name: docker-source
+        resourceRef:
+          name: yelb-appserver-cs-git
+    outputs:
+      - name: builtImage
+        resourceRef:
+          name: yelb-appserver-cs-image
+
+---
+
+#------------------------------------------------------
+
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-docker-image-db-from-git-source
+spec:
+  params:
+    - name: pathToDockerFile
+      type: string
+      description: The path to the dockerfile to build
+      default: $(resources.inputs.docker-source.path)/Dockerfile
+    - name: pathToContext
+      type: string
+      description: |
+        The build context used by Kaniko
+        (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts)
+      default: $(resources.inputs.docker-source.path)
+  resources:
+    inputs:
+      - name: docker-source
+        type: git
+    outputs:
+      - name: builtImage
+        type: image
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:v0.16.0
+      # specifying DOCKER_CONFIG is required to allow kaniko to detect docker credential
+      env:
+        - name: "DOCKER_CONFIG"
+          value: "/tekton/home/.docker/"
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=$(params.pathToDockerFile)
+        - --destination=$(resources.outputs.builtImage.url)
+        - --context=$(params.pathToContext)
+      
+---
+
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: yelb-db-cs-git
+spec:
+  type: git
+  params:
+    - name: revision
+      value: main
+    - name: url
+      value: https://github.com/kiaz-github/yelb-db-cs.git
+
+---
+
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: yelb-db-cs-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: index.docker.io/chiarasalvatore/yelb-db-cs:0.2
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: build-yelb-db-cs-docker-image-from-git-source-task-run
+spec:
+  serviceAccountName: dockerhub-service
+  taskRef:
+    name: build-docker-image-db-from-git-source
+  params:
+    - name: pathToDockerFile
+      value: Dockerfile
+  resources:
+    inputs:
+      - name: docker-source
+        resourceRef:
+          name: yelb-db-cs-git
+    outputs:
+      - name: builtImage
+        resourceRef:
+          name: yelb-db-cs-image

@@ -1,14 +1,35 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Service
 metadata:
-  name: db-pvc
+  name: yelb-db
+  labels:
+    app: yelb-db
+    tier: backenddb
   namespace: yelb
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi
+  type: ClusterIP 
+  ports:
+  - port: 5432
+  clusterIP: None
+  selector:
+    app: yelb-db
+    tier: backenddb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yelb-db-read
+  labels:
+    app: yelb-db
+    tier: backenddb
+  namespace: yelb
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+  selector:
+    app: yelb-db
+    tier: backenddb
 ---
 apiVersion: v1
 data:
@@ -34,22 +55,6 @@ spec:
   selector:
     app: redis-server
     tier: cache
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: yelb-db
-  labels:
-    app: yelb-db
-    tier: backenddb
-  namespace: yelb
-spec:
-  type: ClusterIP
-  ports:
-  - port: 5432
-  selector:
-    app: yelb-db
-    tier: backenddb
 ---
 apiVersion: v1
 kind: Service
@@ -148,11 +153,12 @@ spec:
         - containerPort: 6379
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: yelb-db
   namespace: yelb
 spec:
+  serviceName: yelb-db
   replicas: 1
   selector:
     matchLabels:
@@ -164,10 +170,6 @@ spec:
         app: yelb-db
         tier: backenddb
     spec:
-      volumes:
-      - name: storagedb
-        persistentVolumeClaim:
-          claimName: db-pvc
       containers:
       - name: yelb-db
         image: chiarasalvatore/yelb-db-cs:0.2
@@ -184,6 +186,14 @@ spec:
         volumeMounts:
         - name: storagedb
           mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: storagedb
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 2Gi
 ---
 apiVersion: apps/v1
 kind: Deployment

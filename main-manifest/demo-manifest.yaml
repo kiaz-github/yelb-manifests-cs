@@ -130,7 +130,7 @@ spec:
     spec:
       containers:
       - name: yelb-ui
-        image: chiarasalvatore/yelb-ui-cs:0.2.1
+        image: chiarasalvatore/yelb-ui-cs:0.2
         ports:
         - containerPort: 80
 ---
@@ -177,7 +177,7 @@ spec:
     spec:
       containers:
       - name: yelb-db
-        image: chiarasalvatore/yelb-db-cs:0.2.1
+        image: chiarasalvatore/yelb-db-cs:0.2
         ports:
         - containerPort: 5432
         env:
@@ -219,6 +219,6 @@ spec:
     spec:
       containers:
       - name: yelb-appserver
-        image: chiarasalvatore/yelb-appserver-cs:0.2.1
+        image: chiarasalvatore/yelb-appserver-cs:0.2
         ports:
         - containerPort: 4567

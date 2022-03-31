@@ -69,7 +69,7 @@ spec:
   type: image
   params:
     - name: url
-      value: index.docker.io/chiarasalvatore/yelb-ui-cs:0.2
+      value: index.docker.io/chiarasalvatore/yelb-ui-cs:0.2.2
 
 ---
 
@@ -159,7 +159,7 @@ spec:
   type: image
   params:
     - name: url
-      value: index.docker.io/chiarasalvatore/yelb-appserver-cs:0.2
+      value: index.docker.io/chiarasalvatore/yelb-appserver-cs:0.2.2
 
 ---
 
@@ -249,7 +249,7 @@ spec:
   type: image
   params:
     - name: url
-      value: index.docker.io/chiarasalvatore/yelb-db-cs:0.2
+      value: index.docker.io/chiarasalvatore/yelb-db-cs:0.2.2
 
 ---
 
